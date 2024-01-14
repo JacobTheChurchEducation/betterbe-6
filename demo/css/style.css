@@ -1,0 +1,530 @@
+body {
+    background-color: white;
+    color: #000000;
+
+}
+
+#container
+{
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#header
+{
+    position: relative;
+    padding: 10px;
+    margin: 30px;
+    background-color: white;
+    display: flex;
+}
+
+
+.login
+{
+    position: relative;
+    float: left;
+    width: 20%;
+}
+
+.login img
+{
+    position: relative;
+    width: 30px;
+    height: 30px;
+}
+
+.logo
+{
+    float: left;
+    position: relative;
+    width: 60%;
+    text-align: center;
+}
+
+.logo img
+{
+    width: 170px;
+    height: 30px;
+}
+
+.cart {
+    position: relative;
+    float: left;
+    width: 20%;
+
+}
+.cart img
+{
+    position: relative;
+    float: right;
+    width: 30px;
+    height: 30px;
+}
+
+#search_box
+{
+    position: relative;
+    width: 55%;
+    height: 52px;
+    border-radius: 25px;
+    background-color: #F9F9FC;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0;
+}
+ol
+{
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+}
+ol a
+{
+    color: white;
+    text-decoration: none;
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+#search_button
+{
+    background-color: #F9F9FC;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    border-radius:0px 25px 25px 0px;
+    float: left;
+    border: none;
+}
+#search_button:hover
+{
+    background-color: #E3E3EB;
+    cursor: pointer;
+}
+#search_button img
+{
+    display: block;
+    width: 24px;
+    height: 24px;
+    margin: auto;
+    padding: 0;
+}
+ol > li:first-child
+{
+    border-radius: 25px 0px 0px 25px;
+}
+ol > li:last-child
+{
+    border-radius: 0px 25px 25px 0px;
+}
+ol > li
+{
+    position: relative;
+    float: left;
+    width: 16.666%;
+    height: 100%;
+}
+ol > li:hover
+{
+    background-color: #E3E3EB;
+    display: block;
+}
+ol > li > a img
+{
+    display: block;
+    width: 83px;
+    height: 24px;
+    margin: auto;
+    padding-left: 20px;
+
+}
+
+ol > li > form
+{
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    color: black;
+    border-radius: 10px;
+    display: none;
+    border: 1px solid #D8D8D8;
+}
+
+
+ol > li:hover > form
+{
+display: inline-block;
+}
+
+
+ol > li > form > label
+{
+    display: inline-block;
+    background-color: #FFFFFF;
+    position: relative;
+    z-index: 100;
+    border-top: 1px solid #D8D8D8;
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+
+
+#car_box
+{
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 1190px;
+    margin-top: 118px;
+    display: flex;
+    flex-wrap: wrap;
+    /*justify-content: space-around;*/
+    gap: 30px;
+
+}
+
+.car
+{
+    height: 354px;
+    width: 275px;
+    min-width: 232px;
+    background-color: #F8F8FA;
+    border-radius: 40px;
+}
+
+.car:hover > .car_options_display > a > .car_option_display_DETAILS
+{
+    display: block;
+
+}
+.car:hover > .car_options_display > a{
+    text-decoration: none;
+}
+.car:hover > .car_options_display > .car_option_display_in
+{
+    display: none;
+}
+
+.car-image
+{
+    height: 155px;
+    width: 275px;
+}
+
+.car_title
+{
+    margin-top: 5px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    padding: 10px;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 27px;
+    width: 227px;
+}
+
+.car_price
+{
+    padding: 10px;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 34px;
+    white-space: nowrap;
+    width: 227px;
+    margin-left: auto;
+    margin-right: auto;
+
+}
+.car_options_display
+{
+    margin-top: 10px;
+    height: 41px;
+    width: 243px;
+    margin-right: auto;
+    margin-left: auto;
+
+}
+.car_option_display_DETAILS
+{
+    text-align: center;
+    background-color: #29235c;
+    border-radius: 25px;
+    width: 181px;
+    height: 41px;
+    margin: auto;
+    line-height: 41px;
+    display: none;
+
+}
+.car_option_display_in {
+    position: relative;
+    float: left;
+    height: 41px;
+    width: 33.33%;
+    text-align: center;
+    margin: auto;
+}
+
+.car_option_display_in_img
+{
+    height: 24px;
+    width: 24px;
+}
+
+
+
+
+/*-----------------------Detail-page--------------------------------*/
+
+#detail_page_container
+{
+    width: 100%;
+}
+
+.detail-page-options
+{
+    float: left;
+    width: 50%;
+
+
+}
+.detail_page-car-info
+{
+    text-align: center;
+    width: 50%;
+    float: left;
+}
+.option-box
+{
+    display: flex;
+    flex-wrap: wrap;
+    /*justify-content: space-around;*/
+    gap: 20px;
+}
+
+.option-text
+{
+    margin-bottom: 10px;
+
+}
+
+.detail-page-options-tile
+{
+    width: 120px;
+    height: 150px;
+    background-color: #F9F9FC;
+    text-align: center;
+    margin: 10px;
+    box-sizing: border-box;
+    overflow:hidden;
+    border: none;
+    text-decoration: none;
+    padding: 0;
+}
+.color-first-half
+{
+    border-radius: 25px 25px 0 0;
+    width: 100%;
+    height: 50%;
+}
+.option-price
+{
+    position: relative;
+    background-color: #E73053;
+    border-radius: 25px;
+    color: white;
+    width: 55px;
+    height: 20px;
+    margin: auto;
+    line-height: 20px;
+    margin-top: 10px;
+}
+/*TO BE AUTOMATED */
+#ruby > .color-first-half
+{
+    background-color: #E02020;
+}
+#amber > .color-first-half
+{
+    background-color: #FA6400;
+}
+#black > .color-first-half
+{
+    background-color: black;
+}
+.black > .color-first-half
+{
+    background-color: black;
+}
+/*----------------------*/
+.color-second-half
+{
+    width: 100%;
+    height: 50%;
+}
+.detail-page-car-image
+{
+    width: 621px;
+    height: 350px;
+
+}
+.option input[type="checkbox"]
+{
+    -webkit-appearance: none;
+    position: relative;
+    height: 100%;
+    width: 100%;
+    cursor: pointer;
+    border-radius: 25px;
+}
+.option label
+{
+    height: 100%;
+    width: 100%;
+    position: relative;
+    bottom: 0;
+}
+.detail-page-options-tile > .detail-page-options-tile-img img
+{
+    width: 50px;
+    height: 50px;
+   margin-top: 30%;
+    margin-left: 2px;
+}
+
+.detail-page-options-tile-img
+{
+    height: 60%;
+}
+
+.detail-page-options-tile-text
+{
+    height: 40%;
+    padding-top: 10px;
+}
+.detail-page-options-tile:hover
+{
+    box-shadow: 0 0 0 5px #e53451;
+    border-radius: 25px;
+    cursor: pointer;
+}
+.detail_page-car_options_display
+{
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-around;
+
+
+}
+.detail_page-car_option_display_in
+{
+    width: 160px;
+    height: 160px;
+    background-color: #F9F9FC;
+    border-radius: 25px;
+}
+.detail_page-car_option_display_in_img img
+{
+    width: 48px;
+    height: 48px;
+    margin-top: 30%;
+}
+.detail_page-car_option_display_in_img
+{
+
+    height: 60%;
+}
+.detail_page-car_option_display_in > x-label
+{
+    height: 40%;
+}
+#buy-button
+{
+    width: 100%;
+    background-color: #e53451;
+    height: 100px;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    margin-top: 30px;
+}
+#buy-button:hover {
+    font-size: 0;
+}
+#buy-button:hover:after{
+    content: attr(data-hover);
+    font-size: 48px;
+}
+.option-butotn
+{
+
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+/*Sign-up PAGE*/
+
+.sign_up_field
+{
+    width: 520px;
+    margin: auto;
+}
+.sign_up_field_logo
+{
+    width: 200px;
+    height: 35px;
+    margin: 200px auto 36px auto;
+}
+.sign_up_field_logo img
+{
+    width: 100%;
+    height: 100%;
+}
+
+
+.input_field
+{
+    margin-top: 24px;
+    width: 484px;
+    border-radius: 16px;
+    background-color: #F9F9FC;
+    border: #979797 solid 1px;
+    font-size: 24px;
+    padding: 18px;
+}
+.sign_up_button
+{
+    background-color: #29235c;
+    margin-top: 48px;
+    color: #FFFFFF;
+    padding: 18px;
+    width: 522px;
+    cursor: pointer;
+}
+
+#error-message
+{
+
+    background-color: #e53451;
+    color: #ffffff;
+    border: none;
+    border-radius: 0;
+    width: 484px;
+    font-size: 24px;
+        text-align: center;
+}
+
