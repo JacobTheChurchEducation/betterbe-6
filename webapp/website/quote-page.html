@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+  <meta charset="UTF-8">
+  <title>Quote</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../css/styleguide.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.3/jspdf.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+</head>
+<body onload="start()">
+<div id="container" >
+  <div id="header">
+    <div class="login">
+      <a href="sign-up.html">
+        <img src="../img/topbar_img/Sign_In.png" alt="Login">
+      </a>
+    </div>
+    <div class="logo">
+      <a href="../index.html">
+        <img src="../img/topbar_img/FC_logo_Better_Be.png" alt="Logo">
+      </a>
+    </div>
+    <div class="cart">
+
+    </div>
+  </div>
+  <div id = "quote_page_container">
+
+
+
+    <div class="quote-box">
+      <div class="quote-text-box">
+        <div class="top-text">Quote</div>
+        <div class="top-text-2">Review your purchase.</div>
+      </div>
+
+
+
+        <div id="car-details-box" class="quote-page-car_options_display"> </div>
+        <div id="user-inserts" class="quote-page-car_options_display"> </div>
+
+    </div>
+    <div class="download-button-box">
+      <button id="download-button" onclick="CreatePDFfromHTML()">Download</button>
+    </div>
+
+  </div>
+
+</div>
+<script>
+  let carID;
+  let option = [];
+
+  function CreatePDFfromHTML() {
+    var HTML_Width = $(".quote-box").width();
+    var HTML_Height = $(".quote-box").height();
+    var top_left_margin = 15;
+    var PDF_Width = HTML_Width + (top_left_margin * 2);
+    var PDF_Height = (PDF_Width * 1.5) + (top_left_margin * 2);
+    var canvas_image_width = HTML_Width;
+    var canvas_image_height = HTML_Height;
+
+    var totalPDFPages = Math.ceil(HTML_Height / PDF_Height) - 1;
+
+    html2canvas($(".quote-box")[0]).then(function (canvas) {
+      var imgData = canvas.toDataURL("image/jpeg", 1.0);
+      var pdf = new jsPDF('p', 'pt', [PDF_Width, PDF_Height]);
+      pdf.addImage(imgData, 'JPG', top_left_margin, top_left_margin, canvas_image_width, canvas_image_height);
+      for (var i = 1; i <= totalPDFPages; i++) {
+        pdf.addPage(PDF_Width, PDF_Height);
+        pdf.addImage(imgData, 'JPG', top_left_margin, -(PDF_Height*i)+(top_left_margin*4),canvas_image_width,canvas_image_height);
+      }
+      pdf.save("quote.pdf");
+    });
+  }
+  function start() {
+
+
+    let userData = sessionStorage.getItem('contactDetails');
+    let jsonUserData = JSON.parse(userData);
+    let carData = sessionStorage.getItem('carData');
+    let jsonCarData = JSON.parse(carData);
+
+    carID = jsonCarData.carID;
+    option = jsonCarData.options;
+
+
+   QueryCarDetails();
+
+
+    addUserInserts(jsonUserData.startDate, jsonUserData.period, jsonUserData.name, jsonUserData.mobile, jsonUserData.email);
+  }
+
+  function QueryOptionDetials() {
+    var myObj;
+    var xhr = new XMLHttpRequest();
+    let string = "";
+    var optionIDs = [];
+    for(let i in option) {
+      if(string === "") {
+        string = option[i];
+      }
+      else
+      {
+        string +="," + option[i];
+      }
+    }
+
+
+    xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getOptionswithOI/" + string, true);
+    xhr.send();
+
+
+    xhr.onreadystatechange = function () {
+      if (this.readyState === 4 && this.status === 200) {
+        var response = this.responseText;
+        myObj = JSON.parse(response);
+
+        for(let i in myObj) {
+
+          if (!optionIDs.includes(myObj[i].option_id)) {
+            addOptions(myObj[i].option_id, myObj[i].option_name);
+
+            optionIDs.push(myObj[i].option_id)
+          }
+
+          addOptionInstance(myObj[i].option_id, myObj[i].optionInstance.id, myObj[i].optionInstance.option_name, myObj[i].optionInstance.price_effect);
+        }
+      }
+    }
+  }
+    function addOptions(optionID,  optionName){
+      document.getElementById('car-details-box').innerHTML += " <div id=\"form-options-box"+optionID+"\" class=\"form-options-box\">\n" +
+              "                            <div id=\"form-option"+optionID+"\" class=\"form-option\">"+optionName+": </div>\n" +
+              "                        </div>"
+    }
+
+
+
+    function addOptionInstance(optionID, optionInstanceID, optionName, optionPrice) {
+      document.getElementById('form-options-box' + optionID).innerHTML +=   "<div class=\"option-instance-form-box\">" +
+              "<div id=\"form-option-instance"+optionInstanceID+"\" class=\"form-option-instnace\">"+optionName+"</div>\n" +
+              "  <div class=\"form-option-price form-option-instnace\">$"+optionPrice+"</div>\n" +
+              "    </div>";
+
+    }
+
+  function QueryCarDetails() {
+    var myObj;
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getCar/" + carID, true);
+    xhr.send();
+
+    xhr.onreadystatechange = function () {
+      if (this.readyState === 4 && this.status === 200) {
+        var response = this.responseText;
+        myObj = JSON.parse(response);
+
+
+        let title = myObj.make + " " + myObj.model;
+        addCarDetails(myObj.id, title, myObj.price);
+        carPrice = myObj.monthly_price;
+      }
+    }
+
+  }
+
+
+
+  function addCarDetails(id, title, price) {
+    document.getElementById("car-details-box").innerHTML =   "   <div class=\"form-options-box form-initial-price-price\">\n" +
+            "                            <div class=\"form-option\">Initial price: </div>\n" +
+            "                            <div id=\"form-initial-price\">$"+price+"</div>\n" +
+            "                        </div>" +
+            "<div class=\"detail_page-car_options_display\" id = \"optionBox\"></div>\n";
+    QueryOptionDetials();
+  }
+
+
+
+
+
+
+
+  function addDetailName(optionName){
+    document.getElementById('car-details-box').innerHTML += "    <div class=\"form-options-box\">\n" +
+            "            <div class=\"form-option\">"+optionName+": </div>\n" +
+            "            <div id=\""+optionName+"\" class=\"multiple-option-instances\">\n" +
+            "            </div>\n" +
+            "          </div>"
+
+  }
+
+  function addDetailNameInstance(optionName, optionInstanceName) {
+    document.getElementById(optionName).innerHTML += "<div class=\"form-user-inputs\">"+optionInstanceName+"</div>\n";
+  }
+
+
+
+  function addUserInserts(startDate, period, name, mobile, emailAddress) {
+    document.getElementById("user-inserts").innerHTML = "<div class=\"form-options-box\">\n" +
+            "          <div class=\"form-option\">Start date: </div>\n" +
+            "          <div class=\"form-user-inputs\">"+startDate+"</div>\n" +
+            "        </div>\n" +
+            "\n" +
+            "        <div class=\"form-options-box\">\n" +
+            "          <div class=\"form-option\">Period: </div>\n" +
+            "          <div class=\"form-user-inputs\">"+period+" month</div>\n" +
+            "        </div>\n" +
+            "        <div class=\"form-options-box\">\n" +
+            "          <div class=\"form-option\">Name: </div>\n" +
+            "          <div class=\"form-user-inputs\">"+name+"</div>\n" +
+            "        </div>\n" +
+            "\n" +
+            "        <div class=\"form-options-box\">\n" +
+            "          <div class=\"form-option\">Mobile: </div>\n" +
+            "          <div class=\"form-user-inputs\">"+mobile+"</div>\n" +
+            "        </div>\n" +
+            "\n" +
+            "        <div class=\"form-options-box\">\n" +
+            "          <div class=\"form-option\">Email address: </div>\n" +
+            "          <div class=\"form-user-inputs\">"+emailAddress+"</div>\n" +
+            "        </div>"
+  }
+
+
+
+
+
+</script>
+
+
+
+
+</body>
+</html>

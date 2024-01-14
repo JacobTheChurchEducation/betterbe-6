@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign In</title>
+    <link rel="stylesheet" href="../css/style.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../css/styleguide.css" />
+</head>
+<body onload="check()">
+<div id="container">
+
+    <div class="sign_up_field">
+        <div class="sign_up_field_logo">
+            <a href="../index.html">
+                <img src="../img/topbar_img/FC_logo_Better_Be.png" alt="Logo">
+            </a>
+        </div>
+
+        <div id= "error-message" class="input_field"> Invalid email or password. Try again. </div>
+
+        <input id="email" class="input_field" type="text" placeholder="Email">
+
+        <input id="password" class="input_field" type="password" placeholder="Password">
+
+        <button id="submit" class="input_field sign_up_button" onclick="signIn()">Sign In</button>
+
+    </div>
+</div>
+
+
+<script>
+    function signIn() {
+        let email = document.getElementById("email").value;
+        let password = document.getElementById("password").value;
+
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                if (this.responseURL.includes("sign-up.html")) {
+                    document.getElementById('error-message').style.display = 'inline-block';
+                    document.getElementById("email").value = "";
+                    document.getElementById("password").value = "";
+                } else {
+                    window.open(this.responseURL, "_self");
+                }
+            }
+        }
+
+        if (email !== "" && password !== "") {
+            httpRequest.open("POST", "http://localhost:8080/BetterBe6/rest/users?email=" + email + "&password=" + password, true);
+            httpRequest.withCredentials = true;
+            httpRequest.send();
+        }
+    }
+
+    function check() {
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                if (httpRequest.responseText === "true") {
+                    window.open("http://localhost:8080/BetterBe6/website/admin-page-cars.html", "_self");
+                }
+            }
+        }
+        httpRequest.open("GET", "http://localhost:8080/BetterBe6/rest/users/check", true);
+        httpRequest.withCredentials = true;
+        httpRequest.send();
+    }
+</script>
+
+</body>
+</html>

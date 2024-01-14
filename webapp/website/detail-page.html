@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Car Details</title>
+
+    <link rel="stylesheet" href="../css/style.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../css/styleguide.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.3/jspdf.min.js"></script>
+</head>
+<body onload="start()">
+<div id="container" >
+    <div id="header">
+        <div class="login">
+            <a href="sign-up.html">
+                <img src="../img/topbar_img/Sign_In.png" alt="Login">
+            </a>
+        </div>
+        <div class="logo">
+
+            <a href="../index.html">
+                <img src="../img/topbar_img/FC_logo_Better_Be.png" alt="Logo">
+            </a>
+        </div>
+        <div class="cart">
+
+        </div>
+    </div>
+
+
+
+    <div id = "detail_page_container">
+        <div id = "detail-page-options"></div>
+
+
+
+        <div id ="detail_page-car-info">
+            <div class="car-card">
+            <div class = "detail_page-car-title">Ariel Atom 500 V8 </div>
+            <div class="detail-page-car-image" ><img class="detail-page-car-image" src="../img/cars_img/home-car-image-2E9AF2EF-4EBE-4E87-943F-3A868B795153@2x.png"> </div>
+            <div class="detail_page-car_options_display" >
+
+                <div class="detail_page-car_option_display_in">
+                    <div class="detail_page-car_option_display_in_img">
+                        <img src="../img/home-type-icon-39AC51D6-5B27-4F01-9D18-224937DAAAC9@2x.png">
+                    </div>
+                    <div class="x-label">Supercar</div>
+                </div>
+                <div class="detail_page-car_option_display_in">
+                    <div class="detail_page-car_option_display_in_img">
+                        <img src="../img/home-year-icon-3A251EBA-AAA7-4891-B3CF-284BB9665849@2x.png">
+                    </div>
+                    <div class="x-label">2009</div>
+                </div>
+            </div>
+            </div>
+            <div id="buy-button" onclick="payClick()" > <!--data-hover="Buy" -->
+<!--                <a href="#">  //TODO-->
+                <div id="buy-button-text">$2900</div>
+                <div class="buy-button-arrow"><img src="../img/Right-Arrow-white.png"></div>
+                </a>
+            </div>
+
+        </div>
+
+
+
+    </div>
+</div>
+
+<script>
+    var url = document.location.href;
+    let carID = url.split('?carID=')[1];
+    let mandatorySet;
+
+    function start(){
+        QueryCarDetails();
+        QueryOptions();
+        mandatoryStart();
+
+    }
+
+    function QueryCarDetails() {
+        var myObj;
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getCar/"+carID, true);
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+                let img = myObj.make + "_" + myObj.model + ".png";
+                img = img.toLowerCase().replace(/\s/g,'').replace("/", "");
+                let title = myObj.make + " " + myObj.model;
+                window.document.title = title;
+                addCarDetails(myObj.id, title, myObj.price, img, myObj.body_type, myObj.production_year);
+            }
+        }
+    }
+    function QueryOptions(){
+        var myObj;
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getOption/"+carID, true);
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+
+                for (let i in myObj) {
+                    addOption(myObj[i].option_id, myObj[i].option_name);
+                    QueryOptionInstances(myObj[i].option_id);
+                    mandatoryOptionNamesADD();
+                    mandatoryOptionInstanceNamesADD();
+                }
+            }
+        }
+    }
+
+    function QueryOptionInstances(option_id) {
+        var myObj;
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getOptionInstance/"+ option_id, true);
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+                for (let i in myObj) {
+                    addOptionInstance(myObj[i].option_id, myObj[i].id, myObj[i].option_name, myObj[i].price_effect);
+                }
+            }
+        }
+    }
+
+    function addCarDetails(id, title, price, img, body_type, production_year) {
+            document.getElementById("detail_page-car-info").innerHTML = "<div id=\"car-card"+id+"\" class=\"car-card\">\n" +
+            "            <div class = \"detail_page-car-title\">"+title+"</div>\n" +
+            "            <div class=\"detail-page-car-image\" ><img class=\"detail-page-car-image\" src=\"../img/cars_img/"+img+"\"> </div>\n" +
+            "            <div class=\"detail_page-car_options_display\" >\n" +
+            "                <div class=\"detail_page-car_option_display_in\">\n" +
+            "                    <div class=\"detail_page-car_option_display_in_img\">\n" +
+            "                        <img src=\"../img/home-type-icon-39AC51D6-5B27-4F01-9D18-224937DAAAC9@2x.png\">\n" +
+            "                    </div>\n" +
+            "                    <div class=\"x-label\">"+body_type+"</div>\n" +
+            "                </div>\n" +
+            "                <div class=\"detail_page-car_option_display_in\">\n" +
+            "                    <div class=\"detail_page-car_option_display_in_img\">\n" +
+            "                        <img src=\"../img/home-year-icon-3A251EBA-AAA7-4891-B3CF-284BB9665849@2x.png\">\n" +
+            "                    </div>\n" +
+            "                    <div class=\"x-label\">"+production_year+"</div>\n" +
+            "                </div>\n" +
+            "            </div>\n" +
+            "            </div>\n" +
+            "            <div id=\"buy-button\" onclick=\"payClick()\" >\n" +
+            "                <div id=\"buy-button-text\">€ "+price+"</div>\n" +
+            "                <div class=\"buy-button-arrow\"><img src=\"../img/Right-Arrow-white.png\"></div>\n" +
+            "                </a>\n" +
+            "            </div>"
+
+    }
+
+
+
+
+
+    function addOption(optionId, option_name){
+        document.getElementById("detail-page-options").innerHTML += " <div id = \"option"+optionId+"\" class = \"option\">\n" +
+            " <div class=\"option-text-container\" >"+
+            "<div class =\"option-text\">"+option_name+"</div>\n" +
+            " <div style=\"display: none\" id=\"mandatory-signOption"+optionId+"\" class=\"mandatory-sign\">M</div>" +
+            "</div>" +
+            "<div id=\"option-instance-box-container"+optionId+"\" class=\"option-instances-box-container\"></div>" +
+            "            </div>";
+
+
+
+    }
+
+    function addOptionInstance (optionId, optionInstanceID, optionInstancename, priceChange) {
+        document.getElementById("option-instance-box-container"+ optionId).innerHTML +=
+            " <div  id=\"option-instance-box"+optionInstanceID+"\" class = \"option-instance-box\">\n" +
+            "                        <div class=\"checkbox-box-box\">\n" +
+            "                            <input name=\"\" class=\"optionInstance\" type=\"checkbox\" id=\"optionInstance"+optionInstanceID+"\" onclick=\"optionClick("+priceChange+", this, "+optionInstanceID+")\">\n" +
+            "                            <label id=\"label"+optionInstanceID+"\" for=\"optionInstance"+optionInstanceID+"\" >"+optionInstancename+"</label>\n" +
+            "                        </div>\n" +
+            "                           <div style=\"display: none\" id=\"mandatory-signOptionInstance"+optionInstanceID+"\" class=\"mandatory-sign\">M</div>" +
+            "                     <div class=\"priceChange\">€ "+priceChange+"</div>\n" +
+             "</div>"
+    }
+
+    function mandatoryStart() {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getMandatoryByCar/" + carID, true); //TODO
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+                mandatorySet = new Array(myObj.length);
+
+                if(myObj.length === 0) {
+                    let button = document.getElementById('buy-button');
+                    button.style.cursor = 'pointer';
+                    button.style.opacity = '100%'
+                    button.style.pointerEvents = 'auto'
+                }
+                else {
+                    for (let i in myObj) {
+                        mandatorySet[i] = [myObj[i].id, 0];
+                    }
+                }
+            }
+
+        }
+    }
+
+
+
+    function mandatoryOptionNamesADD() {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getMandatoryWithOption/" + carID, true);
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+
+
+                for (let i in myObj) {
+
+                    document.getElementById('mandatory-signOption' + myObj[i].option_id).style.display = "inline-block";
+
+                }
+            }
+        }
+    }
+
+    function mandatoryOptionInstanceNamesADD() {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getMandatoryInstances/" + carID, true);
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+
+
+                for (let i in myObj) {
+                    document.getElementById('mandatory-signOptionInstance' + myObj[i].id).style.display = "inline-block";
+
+                }
+            }
+        }
+
+    }
+
+
+    function optionClick(priceChange, element, optionInstanceID)
+    {
+
+        if(element.checked === true){
+            changePrice(priceChange, 'add');
+            exclusive('checked', optionInstanceID);
+            mandatory('checked', optionInstanceID);
+        }
+        else{
+            changePrice(priceChange, 'minus')
+            exclusive('unchecked', optionInstanceID);
+            mandatory('unchecked', optionInstanceID);
+
+        }
+
+
+
+
+
+    }
+    function changePrice(priceChange, decision) {
+        let price = document.getElementById('buy-button-text').innerText;
+
+
+        document.getElementById('buy-button-text').innerHTML = "";
+
+
+
+        let initalprice = parseFloat(price.slice(1, price.length));
+
+
+
+        if(decision === 'add'){
+            let lastprice = initalprice+parseInt(priceChange);
+            document.getElementById('buy-button-text').innerHTML = "$" + lastprice;
+        }
+        else if(decision === 'minus'){
+            let lastprice = initalprice-parseInt(priceChange);
+
+            document.getElementById('buy-button-text').innerHTML = "$" + lastprice;
+        }
+    }
+
+    function exclusive(type, optionInstanceID) {
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getExclusive/" + optionInstanceID, true); //TODO
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+
+                if(myObj.length !== 0) {
+
+                    for (let i in myObj) {
+
+
+                        if(type === 'checked') {
+
+                            disable(myObj[i].id);
+
+                        }
+                        if(type === 'unchecked') {
+
+
+                            available(myObj[i].id);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+    function disable(id){
+
+
+        document.getElementById("optionInstance" + id).classList.add("checkbox-disabled");
+        document.getElementById("label" + id).className  = "checkbox-disabled";
+
+        document.getElementById("optionInstance" + id).disabled = true;
+
+
+    }
+    function available(id){
+        document.getElementById("optionInstance" + id).classList.add("checkbox-available");
+        document.getElementById("label" + id).className = "checkbox-available";
+        document.getElementById("label" + id).className = "checkbox-available";
+
+
+        document.getElementById("optionInstance" + id).disabled = false;
+    }
+
+    function mandatory(type, optionInstanceID) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getMandatoryByInstance/" + optionInstanceID, true); //TODO
+        xhr.send();
+
+
+
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+
+
+                if(myObj.length !== 0) {
+
+                    for (let i in myObj) {
+                        let relationID = myObj[i].id;
+
+                        for (let y = 0; y < mandatorySet.length; y++) {
+                            if (mandatorySet[y][0] === relationID) {
+
+
+
+                                if (type === "checked") {
+                                    mandatorySet[y][1] = mandatorySet[y][1] + 1;
+
+                                    submitCheck();
+
+                                } else if (type === "unchecked") {
+                                    mandatorySet[y][1] = mandatorySet[y][1] - 1;
+                                    submitCheck();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    function submitCheck() {
+        let decision = true;
+
+
+            for (let i = 0; i < mandatorySet.length; i++) {
+                if(mandatorySet[i][1] === 0) {
+                    decision = false;
+                    break;
+                }
+            }
+
+        if(decision) {
+            buttonChange(true);
+        }
+        else {
+            buttonChange(false);
+
+        }
+
+    }
+
+    function buttonChange(decision) {
+        let button = document.getElementById('buy-button');
+        if(decision) { //TO change color
+
+            button.style.cursor = 'pointer';
+            button.style.opacity = '100%'
+            button.style.pointerEvents = 'auto'
+        }
+        else {//TO change color
+
+            button.style.cursor = 'none';
+            button.style.opacity = '50%'
+            button.style.pointerEvents = 'none'
+
+
+        }
+
+    }
+
+    function payClick() {
+        var count = $('.optionInstance').length;
+        let checkedArray = new Array(count)
+
+        $('.optionInstance').each(function (index, obj) {
+            if (this.checked === true) {
+               checkedArray.push(this.id.split('optionInstance')[1])
+            }
+        });
+
+        const options = checkedArray.filter(element => {
+            return element !== null;
+        });
+
+        let carData = {};
+        carData.carID = carID;
+        carData.options = options;
+        let jsonCarData = JSON.stringify(carData);
+        sessionStorage.setItem('carData', jsonCarData);
+
+        window.open("http://localhost:8080/BetterBe6/website/form-page.html");
+    }
+
+
+</script>
+
+</body>
+</html>

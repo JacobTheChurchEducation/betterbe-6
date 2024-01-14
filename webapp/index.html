@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BetterxBe</title>
+
+    <link rel="stylesheet" href="css/style.css" type="text/css"/>
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.3/jspdf.min.js"></script>
+
+
+</head>
+<body onload="start()">
+
+<div id="container">
+
+    <div id="header">
+        <div class="login">
+            <a href="website/sign-up.html">
+                <img src="img/topbar_img/Sign_In.png" alt="Login">
+            </a>
+        </div>
+        <div class="logo">
+
+            <a href="../BetterBe6/">
+                <img src="img/topbar_img/FC_logo_Better_Be.png" alt="Logo">
+            </a>
+        </div>
+        <div class="cart">
+
+
+        </div>
+    </div>
+    <div style="clear:both"></div>
+    <div id="search_box">
+        <ol>
+            <li><a href="#">
+                <img src="img/search_img/Brand.png" alt="Brand">
+            </a>
+                <form id="brandbox"></form>
+            </li>
+            <li><a href="#">
+                <img src="img/search_img/Type.png" alt="type"></a>
+                <form id="typebox"></form>
+            </li>
+            <li><a href="#">
+                <img src="img/search_img/Year.png" alt="year"></a>
+                <form id="yearbox"></form>
+            </li>
+            <li><a href="#">
+                <img src="img/search_img/Price.png" alt="price"></a>
+                <form action="" method="post">
+                    <label><input class="filter" type="checkbox" name="price" value="300" id="Filter 22"><=300</label>
+                    <label><input class="filter" type="checkbox" name="price" value="350" id="Filter 23"><=350</label>
+                    <label><input class="filter" type="checkbox" name="price" value="400" id="Filter 24"><=400</label>
+                    <label><input class="filter" type="checkbox" name="price" value="450" id="Filter 25"><=450</label>
+                    <label><input class="filter" type="checkbox" name="price" value="500" id="Filter 26"><=500</label>
+                    <label><input class="filter" type="checkbox" name="price" value="550" id="Filter 27"><=550</label>
+                </form>
+            </li>
+            <li>
+                <button id="search_button" onclick="hey2()" type="submit" value="submit"><img
+                        src="img/search_img/Search.png" alt="Button"></button>
+
+            </li>
+        </ol>
+    </div>
+    <div id="car_box">
+
+
+    </div>
+</div>
+<script>
+
+    var brands = [];
+    var types = [];
+    var years = [];
+
+    function start() {
+        var myObj;
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars", true);
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+
+                myObj = JSON.parse(response);
+                for (let i in myObj) {
+                    let img = myObj[i].make + "_" + myObj[i].model + ".png";
+                    img = img.toLowerCase().replace(/\s/g, '').replace("/", "");
+                    let title = myObj[i].make + " " + myObj[i].model;
+                    addCars(myObj[i].id, title, myObj[i].price, img, myObj[i].body_type, myObj[i].production_year);
+
+                    if (!brands.includes(myObj[i].make)) {
+                        brands.push(myObj[i].make);
+                    }
+                    if (!types.includes(myObj[i].body_type)) {
+                        types.push(myObj[i].body_type);
+                    }
+                    if (!years.includes(myObj[i].production_year)) {
+                        years.push(myObj[i].production_year);
+                    }
+                }
+                genereteFilter();
+
+            }
+        }
+
+    }
+
+
+    function hey2() { //AUTOMATIC FILTERING
+        let show = "";
+        let previoustype = "";
+        let previousvalue = "";
+        let currenttype = "";
+        let currentvalue = "";
+        let endvalue = "price";
+        let checker = 0;
+        var xhr = new XMLHttpRequest();
+
+        document.getElementById("car_box").innerHTML = "";
+
+        $('.filter').each(function (index, obj) {
+            let temp = this;
+            if (temp.checked === true) {
+                currenttype = temp.getAttribute('name');
+                console.log("currenttype: " + currenttype)
+
+                currentvalue = temp.getAttribute('value');
+                console.log("currentvalue: " + currentvalue)
+
+
+                if (currenttype !== previoustype) {
+                    checker++;
+                }
+                if (show !== "" && currenttype !== previoustype) {
+                    show += "&";
+                }
+                if (show === "" || show.charAt(show.length - 1) === "&" || previoustype !== currenttype) {
+                    show += temp.getAttribute('name') + "=" + temp.getAttribute('value');
+                }
+                if (previoustype === currenttype) {
+                    show += "," + temp.getAttribute('value');
+                }
+                if (currenttype === endvalue || checker === 3) {
+                    show += "&" + temp.getAttribute('name') + "=" + temp.getAttribute('value');
+                }
+
+                previoustype = temp.getAttribute('name');
+                console.log("previoustype: " + previoustype)
+                previousvalue = temp.getAttribute('value');
+                console.log("previousvalue: " + previoustype)
+            }
+        });
+        var uri = "http://localhost:8080/BetterBe6/rest/cars/filterQuerys?"
+
+        console.log("show: " + show)
+        xhr.open("GET", uri + show, true);
+        xhr.send();
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+
+                var myObj = JSON.parse(response);
+                for (let i in myObj.filterQuery) {
+                    let img = myObj.filterQuery[i].make + "_" + myObj.filterQuery[i].model + ".png";
+                    img = img.toLowerCase().replace(/\s/g, '').replace("/", "");
+                    let title = myObj.filterQuery[i].make + " " + myObj.filterQuery[i].model;
+                    addCars(myObj.filterQuery[i].id, title, myObj.filterQuery[i].price, img, myObj.filterQuery[i].body_type, myObj.filterQuery[i].production_year);
+                }
+            }
+        }
+    }
+
+    function hey() {
+        let show = "";
+        let previoustype = "";
+        let previousvalue = "";
+        let currenttype = "";
+        let currentvalue = "";
+        let endvalue = "price";
+        let checker = 0;
+        var xhr = new XMLHttpRequest();
+
+        document.getElementById("car_box").innerHTML = "";
+        for (let i = 1; i <= 26; i++) {
+            let temp = document.getElementById("Filter " + i.toString());
+            if (temp.checked === true) {
+                currenttype = temp.getAttribute('name');
+                currentvalue = temp.getAttribute('value');
+                if (currenttype !== previoustype) {
+                    checker++;
+                }
+                if (show !== "" && currenttype !== previoustype) {
+                    show += "&";
+                }
+                if (show === "" || show.charAt(show.length - 1) === "&" || previoustype !== currenttype) {
+                    show += temp.getAttribute('name') + "=" + temp.getAttribute('value');
+                }
+                if (previoustype === currenttype) {
+                    show += "," + temp.getAttribute('value');
+                }
+                if (currenttype === endvalue || checker === 3) {
+                    show += "&" + temp.getAttribute('name') + "=" + temp.getAttribute('value');
+                }
+            }
+            previoustype = temp.getAttribute('name');
+            previousvalue = temp.getAttribute('value');
+        }
+        var uri = "http://localhost:8080/BetterBe6/rest/cars/filterQuerys?"
+        console.log(show);
+        console.log(uri + show);
+        xhr.open("GET", uri + show, true);
+        xhr.send();
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                console.log("GET returned");
+                console.log("Data: " + response);
+                var myObj = JSON.parse(response);
+                for (let i in myObj.filterQuery) {
+                    let img = myObj.filterQuery[i].make + "_" + myObj.filterQuery[i].model + ".png";
+                    img = img.toLowerCase().replace(/\s/g, '').replace("/", "");
+                    let title = myObj.filterQuery[i].make + " " + myObj.filterQuery[i].model;
+                    addCars(myObj.filterQuery[i].id, title, myObj.filterQuery[i].price, img, myObj.filterQuery[i].body_type, myObj.filterQuery[i].production_year);
+                }
+            }
+        }
+    }
+
+    function addCars(id, title, price, img, bodyType, year) {
+        document.getElementById("car_box").innerHTML +=
+            "     <div id=\"car- " + id + " \" class=\"car\">\n" +
+            "            <div class=\"car_title\" >" + title + "</div>\n" +
+            "            <div class=\"car_price\" > €" + price + "/month</div>\n" +
+            "            <div class=\"car-image\" ><img class=\"car-image\" src=\"img/cars_img/" + img + "\"> </div>\n" +
+            "                        <div class=\"car_options_display\" >\n" +
+            "<a href=\"website\\detail-page.html?carID=" + id + "\">\n" +
+            "                                <div class = \"car_option_display_DETAILS\">\n" +
+            "                                    DETAILS\n" +
+            "                                </div>\n" +
+            "                            </a>\n" +
+            "                            <div class=\"car_option_display_in\">\n" +
+            "                                <img class=\"car_option_display_in_img\" src=\"img/home-type-icon-39AC51D6-5B27-4F01-9D18-224937DAAAC9@2x.png\">\n" +
+            "                                <div class=\"x-label\"> " + bodyType + "</div>\n" +
+            "                            </div>\n" +
+            "                            <div class=\"car_option_display_in\">\n" +
+            "                                <img class=\"car_option_display_in_img\" src=\"img/home-year-icon-3A251EBA-AAA7-4891-B3CF-284BB9665849@2x.png\">\n" +
+            "                                <div class=\"x-label\"> " + year + "</div>\n" +
+            "                            </div>\n" +
+            "                        </div>";
+    }
+
+    function getBrand() {
+        let string = "";
+        for (let i in brands) {
+            string += "<label><input class=\"filter\" type=\"checkbox\" name=\"brand\" value=\"" + brands[i] + "\"> " + brands[i] + "</label>"
+        }
+        return string;
+    }
+
+    function getType() {
+
+        let string = "";
+
+        for (let i in types) {
+            string += "<label><input class=\"filter\" type=\"checkbox\" name=\"type\" value=\"" + types[i] + "\">" + types[i] + "</label>"
+        }
+        return string;
+    }
+
+    function getYear() {
+        let string = "";
+
+        for (let i in years) {
+            string += "<label><input class=\"filter\" type=\"checkbox\" name=\"year\" value=\"" + years[i] + "\">" + years[i] + "</label>"
+        }
+        return string;
+    }
+
+    //AUTOMATIC FILTERING
+    function genereteFilter() {
+        document.getElementById('brandbox').innerHTML = getBrand();
+        document.getElementById('typebox').innerHTML = getType();
+        document.getElementById('yearbox').innerHTML = getYear();
+    }
+
+</script>
+</body>
+</html>

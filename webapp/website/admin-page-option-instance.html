@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cars</title>
+
+
+
+
+    <link rel="stylesheet" href="../css/style.css" type="text/css" />
+
+</head>
+<body onload="check()">
+<div id="container" >
+    <div id="header">
+        <div class="login">
+        </div>
+        <div class="logo">
+
+            <a href="../index.html">
+                <img src="../img/topbar_img/FC_logo_Better_Be.png" alt="Logo">
+            </a>
+        </div>
+        <div class="cart">
+
+            <a href="#">
+                <img src="../img/topbar_img/Sign%20Out.png" alt="Sign Out" onclick="signOut()">
+            </a>
+        </div>
+    </div>
+
+    <div class="admin-page-settings" >
+
+        <div class ="admin-page-settings-set">
+            <div class="admin-page-settings-set-back">
+                <a nonhref onclick="pageBack()"><button id="goBack"> <img src="../img/Arrow.png" alt="arrow"></button></a>
+            </div>
+            <div class="admin-page-settings-set-add">
+                <button id="addButton" onclick="add()"> <img src="../img/Add.png" alt="add"></button>
+            </div>
+        </div>
+
+
+
+    </div>
+
+    <div id="admin-page-table-box">
+        <table id="admin-page-table"></table>
+    </div>
+
+</div>
+
+<script>
+    let adminPage = document.getElementById("admin-page-table");
+    var url = document.location.href;
+    let optionID = url.split('?optionID=')[1];
+    let addon = false;
+    let editon = false;
+
+    function pageBack(){
+        window.location.href = document.referrer;
+    }
+
+    function signOut() {
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                window.open(this.responseURL, "_self");
+            }
+        }
+        httpRequest.open("POST", "http://localhost:8080/BetterBe6/rest/users/signout", true);
+        httpRequest.withCredentials = true;
+        httpRequest.send();
+    }
+
+
+    function requestOptionInstances() {
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getOptionInstance/" + optionID, true);
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+
+                for (let i in myObj) {
+                    addTableOptions(myObj[i].id, myObj[i].option_name, myObj[i].price_effect);
+                }
+            }
+        }
+    }
+
+    function check() {
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                if (httpRequest.responseText === "true") {
+                    show();
+                } else {
+                    window.open("http://localhost:8080/BetterBe6/website/sign-up.html", "_self");
+                }
+            }
+        }
+        httpRequest.open("GET", "http://localhost:8080/BetterBe6/rest/users/check", true);
+        httpRequest.withCredentials = true;
+        httpRequest.send();
+    }
+
+    function show() { //Function to show the categories for the tables @type is type of table
+        editon = false;
+        addon = false;
+
+        adminPage.innerHTML =
+            "<tr>\n" +
+            "            <th>Option instance ID</th>\n" +
+            "            <th>Option Instance</th>\n" +
+            "            <th>Price effect</th>\n" +
+            "            <th>Edit</th>\n" +
+            "            <th>Delete</th>\n" +
+            "            <th>History</th>\n" +
+            "        </tr>\n";
+        // optionInstanceTest(); // Test function hardcoding the data
+        requestOptionInstances();
+    }
+
+
+    function addTableOptions(optionInstanceID, optionInstance, priceEffect) {
+        adminPage.innerHTML += "  <tr id='tr" + optionInstanceID + "'>\n" +
+            "                <td>" + optionInstanceID + "</td>\n" +
+            "                <td id=\"optionInstance"+optionInstanceID+"\">" + optionInstance + "</td>\n" +
+            "                <td id=\"priceEffect"+optionInstanceID+"\">" + priceEffect + "</td>\n" +
+            "                <td><button class=\"edit-button\" onclick=\"edit(" + optionInstanceID + ")\">Edit</button></td>\n" +
+            "                <td><button class=\"delete-button\"  onclick=\"deletes(" + optionInstanceID + ")\">Delete</button> </td>\n" +
+            "                <td><a href=\"..\\website\\option-instance-history.html?optionInstanceID="+optionInstanceID+"\"><button class=\"historical-data-button\" >History</button> </a></td>\n" +
+            "            </tr>"
+    }
+
+    function add() {
+        if(addon === false) {
+            addon = true;
+            adminPage.innerHTML += "<tr >\n" +
+                "            <td>X</td>\n" +
+                "            <td><input type=\"text\" id=\"optionInstanceAdd\"></td>\n" +
+                "            <td><input type=\"text\" id=\"priecEffectAdd\"></td>\n" +
+                "            <td colspan='1'><input type=\"submit\" value=\"submit\"  onclick=\"submit_add()\"></td>\n" +
+                "            <td colspan='1'><input type=\"submit\" value=\"abort\"  onclick=\"show()\"></td>\n" +
+                "        </tr>\n";
+        }
+
+    }
+    function submit_add() {
+        let optionInstance = document.getElementById("optionInstanceAdd").value;
+        let priceEffect = document.getElementById("priecEffectAdd").value;
+
+
+        var xhr = new XMLHttpRequest();
+
+
+        var JSONObj = {
+            "option_name" : optionInstance,
+            "price_effect" : priceEffect,
+            "option_id" : optionID
+        }
+        xhr.open("POST", "http://localhost:8080/BetterBe6/rest/cars/makeOptionInstance/", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        var FinalJSONObj = JSON.stringify(JSONObj);
+        xhr.send(FinalJSONObj);
+
+        show();
+        addon = false;
+    }
+
+    function edit(optionInstanceID) {
+        if (editon === false) {
+
+            let row = document.getElementById("admin-page-table").rows.namedItem("tr" + optionInstanceID);
+            let optionInstance = document.getElementById("optionInstance" + optionInstanceID).innerText;
+            let priceEffect = document.getElementById("priceEffect" + optionInstanceID).innerText;
+            row.cells[1].innerHTML = "<td><input type=\"text\" id=\"optionInstanceEdit" + optionInstanceID + "\"  placeholder=\"" + optionInstance + "\"></td>"
+            row.cells[2].innerHTML = "<td><input type=\"text\" id=\"priceEffectEdit" + optionInstanceID + "\" placeholder=\"" + priceEffect + "\"></td>"
+            row.cells[3].innerHTML = "<td><input type=\"submit\" value=\"submit\" onclick=\"submit_edit(" + optionInstanceID + ")\"></td>";
+            row.cells[4].innerHTML = "<td><input type=\"submit\" value=\"abort\" onclick=\"show()\"></td>";
+            editon = true;
+        }
+    }
+
+    function submit_edit(optionInstanceID){
+
+        let row = document.getElementById("admin-page-table").rows.namedItem("tr" + optionInstanceID);
+        var xhr = new XMLHttpRequest();
+
+        let optionInstance = document.getElementById("optionInstanceEdit" + optionInstanceID).value;
+        let priceEffect= document.getElementById("priceEffectEdit" + optionInstanceID).value;
+
+
+        var JSONObj = {
+            "option_name" : optionInstance,
+            "price_effect" : priceEffect,
+            "option_id" : optionID,
+            "id" : optionInstanceID
+        }
+
+
+        xhr.open("PUT", "http://localhost:8080/BetterBe6/rest/cars/updateOptionInstance/" + optionInstanceID, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        var FinalJSONObj = JSON.stringify(JSONObj);
+
+        xhr.send(FinalJSONObj);
+
+        editon = false;
+
+        show();
+    }
+
+    function deletes(optionInstanceID) {
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("DELETE", "http://localhost:8080/BetterBe6/rest/cars/option_instance/" + optionInstanceID, true);
+        xhr.send();
+
+        show();
+    }
+
+</script>
+
+</body>
+</html>

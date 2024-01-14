@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cars</title>
+
+
+    <link rel="stylesheet" href="../css/style.css" type="text/css"/>
+
+</head>
+<body onload="show()">
+<div id="container">
+    <div id="header">
+        <div class="login">
+            <!--         //TODO TO BE REMOVED -->
+        </div>
+        <div class="logo">
+
+            <a href="../index.html">
+                <img src="../img/topbar_img/FC_logo_Better_Be.png" alt="Logo">
+            </a>
+        </div>
+        <div class="cart">
+
+            <a href="#">
+                <img src="../img/topbar_img/Sign%20Out.png" alt="Sign Out" onclick="signOut()">
+            </a>
+        </div>
+    </div>
+
+
+    <div id="admin-page-table-box">
+        <table id="admin-page-table"></table>
+
+
+    </div>
+
+</div>
+
+<script>
+    let adminPage = document.getElementById("admin-page-table");
+
+    var url = document.location.href;
+    let optionID = url.split('?optionID=')[1];
+
+    function signOut() {
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                window.open(this.responseURL, "_self");
+            }
+        }
+        httpRequest.open("POST", "http://localhost:8080/BetterBe6/rest/users/signout", true);
+        httpRequest.withCredentials = true;
+        httpRequest.send();
+    }
+
+    function requestOptions() { //TODO
+        // GET method for getting options for car with id
+        // Down there is function copied from index start, we may change it
+
+        //TODO definitely you nede to use id that i'm passing to this funciton
+        // id = optionInstanceID
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/history/ofAnOption/" + optionID, true);
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+
+                for (let i in myObj) {
+                    addTableOptions(myObj[i].id, myObj[i].type, myObj[i].old_option, myObj[i].new_option, myObj[i].timestamp); //TODO we may need to change it
+                }
+            }
+        }
+    }
+
+    function addTableOptions(id, type, old_data, new_data, timestamp) {
+        adminPage.innerHTML += "  <tr id='tr" + id + "'>\n" +
+            "                <td>" + id + "</td>\n" +
+            "                <td id=\"make" + id + "\" >" + type + "</td>\n" +
+            "                <td id=\"model" + id + "\">" + old_data + "</td>\n" +
+            "                <td id=\"price" + id + "\">" + new_data + "</td>\n" +
+            "                <td id=\"bodyType" + id + "\" >" + timestamp + "</td>\n" +
+            "            </tr>";
+    }
+
+    function check() {
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                if (httpRequest.responseText === "true") {
+                    show();
+                } else {
+                    window.open("http://localhost:8080/BetterBe6/website/sign-up.html", "_self");
+                }
+            }
+        }
+        httpRequest.open("GET", "http://localhost:8080/BetterBe6/rest/users/check", true);
+        httpRequest.withCredentials = true;
+        httpRequest.send();
+    }
+
+    function show() { //Function to show the categories for the tables @type is type of table
+        editon = false;
+        addon = false;
+        adminPage.innerHTML =
+            "        <tr>\n" +
+            "            <th>ID</th>\n" +
+            "            <th>Type</th>\n" +
+            "            <th>Old Option</th>\n" +
+            "            <th>New Option</th>\n" +
+            "            <th>Timestamp</th>\n" +
+            "        </tr>\n";
+        // optionTest(); // Test function hardcoding the data
+        requestOptions();
+    }
+
+
+    function optionTest() {
+        for (let i = 0; i < 10; i++) {
+            addTableOptions(i, 'UPDATE', '{“id”: 18, “make”: “Tesla”…}', '{“id”: 22, “car_id”: 2…}', '2022-06-20 14:31:54');
+        }
+    }
+
+</script>
+</body>
+</html>

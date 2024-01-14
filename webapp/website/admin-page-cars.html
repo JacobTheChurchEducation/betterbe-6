@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cars</title>
+
+
+
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../css/styleguide.css" />
+
+</head>
+<body onload="check()">
+<div id="container" >
+    <div id="header">
+        <div class="login">
+        </div>
+        <div class="logo">
+
+            <a href="../index.html">
+                <img src="../img/topbar_img/FC_logo_Better_Be.png" alt="Logo">
+            </a>
+        </div>
+        <div class="cart">
+
+            <a href="#">
+                <img src="../img/topbar_img/Sign%20Out.png" alt="Sign Out" onclick="signOut()">
+            </a>
+        </div>
+    </div>
+
+    <div class="admin-page-settings" >
+
+        <div class ="admin-page-settings-set">
+            <div class="admin-page-settings-set-add">
+                <button id="addButton" onclick="add()"> <img src="../img/Add.png" alt="add"></button>
+            </div>
+
+        </div>
+
+
+
+    </div>
+
+    <div id="admin-page-table-box">
+        <table id="admin-page-table"></table>
+
+
+    </div>
+
+</div>
+
+<script>
+
+    function signOut() {
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                window.open(this.responseURL, "_self");
+            }
+        }
+        httpRequest.open("POST", "http://localhost:8080/BetterBe6/rest/users/signout", true);
+        httpRequest.withCredentials = true;
+        httpRequest.send();
+    }
+
+    let addon = false;
+    let editon = false;
+    let adminPage = document.getElementById("admin-page-table");
+    function requestCars() {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars", true);
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+                for (let i in myObj) {
+                    addTableCar(myObj[i].id, myObj[i].make, myObj[i].model,  myObj[i].price, myObj[i].body_type, myObj[i].production_year);
+                }
+            }
+        }
+    }
+
+    function check() {
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                if (httpRequest.responseText === "true") {
+                    show();
+                } else {
+                    window.open("http://localhost:8080/BetterBe6/website/sign-up.html", "_self");
+                }
+            }
+        }
+        httpRequest.open("GET", "http://localhost:8080/BetterBe6/rest/users/check", true);
+        httpRequest.withCredentials = true;
+        httpRequest.send();
+    }
+
+    function show() { //Function to show the categories for the tables @type is type of table
+        editon = false;
+        addon = false;
+            adminPage.innerHTML =
+                "        <tr >\n" +
+                "            <th>ID</th>\n" +
+                "            <th>Make</th>\n" +
+                "            <th>Model</th>\n" +
+                "            <th>Price</th>\n" +
+                "            <th>Body Type</th>\n" +
+                "            <th>Year</th>\n" +
+                "            <th>Options</th>\n" +
+                "            <th>Edit</th>\n" +
+                "            <th>Delete</th>\n" +
+                "            <th>Historical Data</th>\n" +
+                "        </tr>\n";
+
+            requestCars();
+    }
+
+    function addTableCar(id, make, model, price, bodyType, year) {
+        adminPage.innerHTML += "  <tr id='tr" + id + "'>\n" +
+            "                <td>" + id + "</td>\n" +
+            "                <td id=\"make"+id+"\" >" + make + "</td>\n" +
+            "                <td id=\"model"+id+"\">" + model + "</td>\n" +
+            "                <td id=\"price"+id+"\">" + price + "</td>\n" +
+            "                <td id=\"bodyType"+id+"\" >" + bodyType+ "</td>\n" +
+            "                <td id=\"year"+id+"\" >" + year + "</td>\n" +
+            "                <td><a href= \"..\\website\\admin-page-options.html?carID="+id+"\"><button class=\"options-button\">Options</button></a></td>\n" + //TODO
+            "                <td><button class=\"edit-button\" onclick=\"edit(" + id +")\">Edit</button></td>\n" +
+            "                <td><button class=\"delete-button\"  onclick=\"deletes(" + id +")\">Delete</button> </td>\n" +
+            "                <td><a href=\"..\\website\\car-hisotry.html?carID="+id+"\"><button class=\"historical-data-button\" >History</button> </a></td>\n" +
+            "            </tr>"
+    }
+    function add() {
+        if(addon === false) {
+            addon = true;
+            adminPage.innerHTML += "<tr >\n" +
+                "            <td>X</td>\n" +
+                "            <td><input type=\"text\" id=\"makeAdd\"></td>\n" +
+                "            <td><input type=\"text\" id=\"modelAdd\"></td>\n" +
+                "            <td><input type=\"text\" id=\"priceAdd\"></td>\n" +
+                "            <td><input type=\"text\" id=\"bodyTypeAdd\"></td>\n" +
+                "            <td><input type=\"text\" id=\"yearAdd\"></td>\n" +
+                "            <td colspan='2'><input type=\"submit\" value=\"submit\"  onclick=\"submit_add()\"></td>\n" +
+                "            <td colspan='1'><input type=\"submit\" value=\"abort\"  onclick=\"show()\"></td>\n" +
+                "        </tr>\n";
+        }
+
+    }
+    function submit_add() {
+        let make = document.getElementById("makeAdd").value;
+        let model = document.getElementById("modelAdd").value;
+        let price = document.getElementById("priceAdd").value;
+        let bodyType = document.getElementById("bodyTypeAdd").value;
+        let year= document.getElementById("yearAdd").value;
+
+       var xhr = new XMLHttpRequest();
+        xhr.open("POST", "http://localhost:8080/BetterBe6/rest/cars/makeCar" , true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        var JSONObj = {
+            "make": make,
+            "model": model,
+            "body_type": bodyType,
+            "production_year": parseInt(year),
+            "price": parseInt(price)
+        }
+        var FinalJSONObj = JSON.stringify(JSONObj);
+        xhr.send(FinalJSONObj);
+       addon = false;
+
+
+      show();
+
+    }
+
+
+    function edit(id) {
+        if (editon === false) {
+            let row = document.getElementById("admin-page-table").rows.namedItem("tr" + id);
+            let make = document.getElementById("make" + id).innerText;
+            let model = document.getElementById("model" + id).innerText;
+            let price = document.getElementById("price" + id).innerText;
+            let bodyType = document.getElementById("bodyType" + id).innerText;
+            let year = document.getElementById("year" + id).innerText;
+            row.cells[1].innerHTML = "<td><input type=\"text\" id=\"makeEdit" + id + "\"  placeholder=\"" + make + "\"></td>"
+            row.cells[2].innerHTML = "<td><input type=\"text\" id=\"modelEdit" + id + "\" placeholder=\"" + model + "\"></td>"
+            row.cells[3].innerHTML = "<td><input type=\"text\" id=\"priceEdit" + id + "\" placeholder=\"" + price + "\"></td>"
+            row.cells[4].innerHTML = "<td><input type=\"text\" id=\"bodyTypeEdit" + id + "\" placeholder=\"" + bodyType + "\"></td>"
+            row.cells[5].innerHTML = "<td><input type=\"text\" id=\"yearEdit" + id + "\" placeholder=\"" + year + "\"></td>"
+            row.cells[7].innerHTML = "<td><input type=\"submit\" value=\"submit\" onclick=\"submit_edit(" + id + ")\"></td>";
+            row.cells[8].innerHTML = "<td><input type=\"submit\" value=\"abort\" onclick=\"show()\"></td>";
+            editon = true;
+        }
+    }
+
+
+    function submit_edit(id){
+
+        let row = document.getElementById("admin-page-table").rows.namedItem("tr" + id);
+        let make = document.getElementById("makeEdit" + id).value;
+        let model = document.getElementById("modelEdit" + id).value;
+        let price = document.getElementById("priceEdit" + id).value;
+        let bodyType = document.getElementById("bodyTypeEdit" + id).value;
+        let year= document.getElementById("yearEdit" + id).value;
+
+        var JSONObj = {
+            "id" : id,
+            "make": make,
+            "model": model,
+            "body_type": bodyType,
+            "production_year": parseInt(year),
+            "price": parseInt(price)
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("PUT", "http://localhost:8080/BetterBe6/rest/cars/updateCar/" + id, true);  //TODO definitely change the link here
+        xhr.setRequestHeader("Content-Type", "application/json");
+        var FinalJSONObj = JSON.stringify(JSONObj);
+        xhr.send(FinalJSONObj);
+      show();
+        editon = false;
+
+    }
+    function deletes(id) {
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("DELETE", "http://localhost:8080/BetterBe6/rest/cars/car/" + id, true);
+        xhr.send();
+      show();
+    }
+
+</script>
+
+
+</body>
+</html>

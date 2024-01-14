@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cars</title>
+
+
+    <link rel="stylesheet" href="../css/style.css" type="text/css"/>
+
+
+</head>
+<body onload="check()">
+<div id="container">
+    <div id="header">
+        <div class="login">
+
+        </div>
+        <div class="logo">
+
+            <a href="../index.html">
+                <img src="../img/topbar_img/FC_logo_Better_Be.png" alt="Logo">
+            </a>
+        </div>
+        <div class="cart">
+
+            <a href="#">
+                <img src="../img/topbar_img/Sign%20Out.png" alt="Sign Out" onclick="signOut()">
+            </a>
+        </div>
+    </div>
+
+    <div class="admin-page-settings">
+
+        <div class="admin-page-settings-set">
+            <div class="admin-page-settings-set-add">
+                <button id="addButton" onclick="add()"><img src="../img/Add.png" alt="add"></button>
+            </div>
+        </div>
+
+
+    </div>
+    <div id="admin-page-table-box">
+        <table id="admin-page-table"></table>
+    </div>
+
+</div>
+
+<script>
+
+    let select = "";
+    var url = document.location.href;
+    let carID = url.split('?carID=')[1];
+    let addon = false;
+    let editon = false;
+    let adminPage = document.getElementById("admin-page-table");
+
+    function signOut() {
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                window.open(this.responseURL, "_self");
+            }
+        }
+        httpRequest.open("POST", "http://localhost:8080/BetterBe6/rest/users/signout", true);
+        httpRequest.withCredentials = true;
+        httpRequest.send();
+    }
+
+    function requestRelations() {
+        // GET method for getting options for optionInstance with id
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getRelationWithCarID/" + carID, true);
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+                for (let i in myObj) {
+                    addTableRelations(myObj[i].relation.id, myObj[i].option_name, myObj[i].option_name2, myObj[i].relation.relation_type, myObj[i].relation.instance_1, myObj[i].relation.instance_2);
+                }
+            }
+        }
+    }
+
+    function allOptions() {
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getOptionInstancesWithCarID/" + carID, true);
+        xhr.send();
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+                for (let i in myObj) {
+
+                    select = select + "<option value=\"" + myObj[i].id + "\">" + myObj[i].option_name + "</option>\n";
+
+                }
+            }
+
+        }
+
+    }
+
+
+
+    function addTableRelations(relationID, option1, option2, optionType, option1ID, option2ID) {
+        adminPage.innerHTML += "  <tr id='tr" + relationID + "'>\n" +
+            "                <td>" + relationID + "</td>\n" +
+            "                <td id=\"optionOne" + option1ID + "\">" + option1 + "</td>\n" +
+            "                <td id=\"optionTwo" + option2ID + "\">" + option2 + "</td>\n" +
+            "                <td id=\"optionType" + relationID + "\">" + optionType + "</td>\n" +
+            "                <td><button class=\"edit-button\" onclick=\"edit("+relationID+","+ option1ID + ","+option2ID+")\">Edit</button></td>\n" +
+            "                <td><button class=\"delete-button\"  onclick=\"deletes(" + relationID + ")\">Delete</button> </td>\n" +
+            "            </tr>"
+    }
+
+
+    function check() {
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                if (httpRequest.responseText === "true") {
+                    show();
+                    allOptions();
+                } else {
+                    window.open("http://localhost:8080/BetterBe6/website/sign-up.html", "_self");
+                }
+            }
+        }
+        httpRequest.open("GET", "http://localhost:8080/BetterBe6/rest/users/check", true);
+        httpRequest.withCredentials = true;
+        httpRequest.send();
+    }
+
+    function show() {
+        editon = false;
+        addon = false;
+        adminPage.innerHTML =
+            "        <tr>\n" +
+            "            <th>ID</th>\n" +
+            "            <th>Option 1</th>\n" +
+            "            <th>Option 2</th>\n" +
+            "            <th>OptionType</th>\n" +
+            "            <th>Edit</th>\n" +
+            "            <th>Delete</th>\n" +
+            "        </tr>\n";
+        // relationTest(); // Test function hardcoding the data
+        requestRelations(carID);
+    }
+
+    function add() {
+        let options = select;
+        if (addon === false) {
+            addon = true;
+            adminPage.innerHTML +=
+                "        <tr>\n" +
+                "            <td>X</td>\n" +
+                "            <td><select name=\"optionOneAdd\" id=\"optionOneAdd\">" +
+                "<option value=\"Select\">Select</option>\n" + options + "</select></td>\n" +
+                "            <td><select name=\"optionTwoAdd\" id=\"optionTwoAdd\">" +
+                "<option value=\"Select\">Select</option>\n" + options + "</select></td>\n" +
+                "            <td> <select name=\"optionTypeAdd\" id=\"optionTypeAdd\">\n" +
+                "            <option value=\"Select\">Select</option>\n" +
+                "            <option value=\"M\">Mandatory</option>\n" +
+                "            <option value=\"E\">Exclusive</option>\n" +
+                "        </select></td>\n" +
+                "            <td colspan='1'><input type=\"submit\" value=\"submit\" onclick=\"submit_add()\"></td>\n" +
+                "            <td colspan='1'><input type=\"submit\" value=\"abort\" onclick=\"show()\"></td>\n" +
+                "        </tr>\n";
+        }
+    }
+
+    function submit_add() {
+        let optionOne = document.getElementById("optionOneAdd").value;
+        let optionTwo = document.getElementById("optionTwoAdd").value;
+        let optionType = document.getElementById("optionTypeAdd").value;
+
+        if (optionOne === 'Select' || optionTwo === 'Select' || optionType === 'Select') {
+
+            alert("Select something!")
+
+        } else if (optionOne === optionTwo) {
+            alert("You 2 options cannot be the same!")
+
+        } else {
+
+
+
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost:8080/BetterBe6/rest/cars/makeRelation", true);
+            xhr.setRequestHeader("Content-Type", "application/json")
+            var JSONObj = {
+                "relation_type": optionType,
+                "instance_1": optionOne,
+                "instance_2": optionTwo
+            }
+
+            var FinalJSONObj = JSON.stringify(JSONObj);
+            xhr.send(FinalJSONObj);
+            addon = false;
+            show();
+        }
+    }
+
+    function edit(relationID, option1ID, option2ID) {
+        if (editon === false) {
+
+            let row = document.getElementById("admin-page-table").rows.namedItem("tr" + relationID);
+            let optionType = document.getElementById("optionType" + relationID).innerText;
+
+
+            row.cells[3].innerHTML = "<td><input type=\"text\" id=\"optionTypeEdit" + relationID + "\" placeholder=\"" + optionType + "\"></td>";
+            row.cells[4].innerHTML = "<td><input type=\"submit\" value=\"submit\" onclick=\"submit_edit("+relationID +"," + option1ID + ","+option2ID+")\"></td>";
+            row.cells[5].innerHTML = "<td><input type=\"submit\" value=\"abort\" onclick=\"show()\"></td>";
+            editon = true;
+        }
+    }
+
+    function submit_edit(relationID, option1ID, option2ID) {
+        //TODO to send POST message of
+        let row = document.getElementById("admin-page-table").rows.namedItem("tr" + relationID);
+        let optionType = document.getElementById("optionTypeEdit" + relationID).value;
+
+
+        var JSONObj = {
+            "relation_type": optionType,
+            "instance_1": option1ID,
+            "instance_2": option2ID,
+            "id": relationID
+        }
+
+        //TODO COME HERE BACKEND
+        var xhr = new XMLHttpRequest();
+        xhr.open("PUT", "http://localhost:8080/BetterBe6/rest/cars/updateRelation/" + relationID, true);  //TODO definitely change the link here
+        xhr.setRequestHeader("Content-Type", "application/json");
+        var FinalJSONObj = JSON.stringify(JSONObj);
+        xhr.send(FinalJSONObj);
+
+        editon = false; //TODO inside the onstatefunction
+        show();
+    }
+
+    function deletes(relationID) {
+
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("DELETE", "http://localhost:8080/BetterBe6/rest/cars/relation/" + relationID, true);
+        xhr.send();
+        show();
+    }
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>BetterxBev</title>
+
+    <link rel="stylesheet" href="../css/style.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../css/styleguide.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+</head>
+<body onload="start()">
+<div id="container" >
+    <div id="header">
+        <div class="login">
+            <a href="sign-up.html">
+                <img src="../img/topbar_img/Sign_In.png" alt="Login">
+            </a>
+        </div>
+        <div class="logo">
+
+            <a href="../index.html">
+                <img src="../img/topbar_img/FC_logo_Better_Be.png" alt="Logo">
+            </a>
+        </div>
+        <div class="cart">
+
+            <a href="#">
+            </a>
+        </div>
+    </div>
+    <div id = "form_page_container">
+
+
+        <div class="form-insert">
+            <div class="text-box">
+                <div class="top-text">Payment Details</div>
+                <div class="top-text-2">Complete the purchase by providing your payment details.</div>
+            </div>
+
+
+
+            <div class="dates">
+                <div class="start-date-box form-boxes">
+                    <div class="start-date-text form-page-inserts-texts">Start date</div>
+                    <div class="start-date-insert"><input class="form-inputs " type="date" id="start-date"></div>
+                </div>
+                <div class="period-box">
+
+                    <div class="period-text form-page-inserts-texts">Period</div>
+                    <div class="month-box">
+                        <div class="period-insert"><input class="form-inputs" type="text" id="period" onkeyup="priceMulti(this.value)" ></div>
+                        <div class=" month-text">Months</div>
+                    </div>
+                </div>
+            </div>
+            <div class="email-address-box form-boxes ">
+                <div class="start-date-text form-page-inserts-texts">Name </div>
+                <div class="email-address-insert "><input  class="form-inputs form-big-inputs" type="text" id="name"></div>
+            </div>
+
+            <div class="card-details-box form-boxes">
+                <div class="start-date-text form-page-inserts-texts">Mobile</div>
+                <div class="card-details-insert"><input class="form-inputs form-big-inputs" type="text" id="mobile"></div>
+            </div>
+
+
+            <div class="cardholder-name-box form-boxes">
+                <div class="cardholder-name-text form-page-inserts-texts">E-mail</div>
+                <div class="cardholder-name-insert"><input  class="form-inputs form-big-inputs" type="text" id="email"></div>
+            </div>
+
+
+        </div>
+
+        <div id ="form_page-car-info"></div>
+
+    </div>
+</div>
+
+<script>
+    let carID;
+    let option;
+    let quotePrice = 0  ;
+
+    function start() {
+        let carData = sessionStorage.getItem('carData');
+        let jsonCarData = JSON.parse(carData);
+
+        carID = jsonCarData.carID;
+        option = jsonCarData.options;
+
+
+        QueryCarDetails()
+    }
+
+    function QueryOptionDetials() { //TODO
+        var myObj;
+        var xhr = new XMLHttpRequest();
+        let string = "";
+        var optionIDs = [];
+        for(let i in option) {
+            if(string === "") {
+                string = option[i];
+            }
+            else
+            {
+                string +="," + option[i];
+            }
+        }
+
+
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getOptionswithOI/" + string, true);
+        xhr.send();
+
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+
+                for(let i in myObj) {
+
+                    if (!optionIDs.includes(myObj[i].option_id)) {
+                        addOptions(myObj[i].option_id, myObj[i].option_name);
+
+                        optionIDs.push(myObj[i].option_id)
+                    }
+
+                    addOptionInstance(myObj[i].option_id, myObj[i].optionInstance.id, myObj[i].optionInstance.option_name, myObj[i].optionInstance.price_effect);
+                }
+            }
+        }
+    }
+
+
+
+
+    function addOptions(optionID,  optionName){
+        document.getElementById('optionBox').innerHTML += " <div id=\"form-options-box"+optionID+"\" class=\"form-options-box\">\n" +
+            "                            <div id=\"form-option"+optionID+"\" class=\"form-option\">"+optionName+": </div>\n" +
+            "                        </div>"
+    }
+
+
+
+    function addOptionInstance(optionID, optionInstanceID, optionName, optionPrice) {
+        document.getElementById('form-options-box' + optionID).innerHTML +=   "<div class=\"option-instance-form-box\">" +
+            "<div id=\"form-option-instance"+optionInstanceID+"\" class=\"form-option-instnace\">"+optionName+"</div>\n" +
+            "  <div class=\"form-option-price form-option-instnace\">$"+optionPrice+"</div>\n" +
+            "    </div>";
+
+        quotePrice += optionPrice
+        updatePrice();
+
+    }
+    function updatePrice() {
+        document.getElementById('buy-button-text').innerText = "$" + quotePrice;
+    }
+
+
+
+    function QueryCarDetails() {
+        var myObj;
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:8080/BetterBe6/rest/cars/getCar/" + carID, true);
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var response = this.responseText;
+                myObj = JSON.parse(response);
+
+
+                let title = myObj.make + " " + myObj.model;
+                addCarDetails(myObj.id, title, myObj.price);
+                carPrice = myObj.monthly_price;
+                carID = myObj.id;
+            }
+        }
+
+    }
+
+
+
+    function addCarDetails(id, title, price) {
+        document.getElementById("form_page-car-info").innerHTML = "<div id=\"car-card"+id+"\" class=\"car-card\">\n" +
+            "<div class = \"detail_page-car-title\">"+title+"</div>\n" +
+            "   <div class=\"form-options-box form-initial-price-price\">\n" +
+            "                            <div class=\"form-option\">Initial price: </div>\n" +
+            "                            <div id=\"form-initial-price\">$"+price+"</div>\n" +
+            "                        </div>" +
+            "<div class=\"detail_page-car_options_display\" id = \"optionBox\"></div>\n" +
+            "            </div>\n" +
+            "            <div id=\"buy-button-from\" onclick=\"getInserts()\" >\n" +
+            "                <div id=\"buy-button-text\"></div>\n" +
+            "            </div>";
+
+        quotePrice += price;
+        QueryOptionDetials();
+    }
+
+
+
+    function priceMulti(monthNumber) {
+        if(monthNumber == 0 || monthNumber === "0")  {
+            document.getElementById('buy-button-text').innerHTML = "$" + quotePrice;
+
+        }
+        else
+        {
+            let lastprice = quotePrice * monthNumber;
+            document.getElementById('buy-button-text').innerHTML = "$" + lastprice;
+        }
+    }
+
+
+    function getInserts() {
+        let startDate = document.getElementById('start-date').value;
+        let period = document.getElementById('period').value;
+        let name = document.getElementById('name').value;
+        let mobile = document.getElementById('mobile').value;
+        let email = document.getElementById('email').value;
+
+        if (startDate !== "" && period !== "" && name !== "" && mobile !== "" && email !== "") {
+            let userData = {};
+            userData.startDate = startDate;
+            userData.period = period;
+            userData.name = name;
+            userData.mobile = mobile;
+            userData.email = email;
+            let jsonUserData = JSON.stringify(userData);
+            sessionStorage.setItem('contactDetails', jsonUserData);
+            window.open("http://localhost:8080/BetterBe6/website/quote-page.html");
+        }
+
+    }
+
+
+
+
+
+</script>
+
+</body>
+</html>

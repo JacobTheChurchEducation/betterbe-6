@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cars</title>
+
+
+
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../css/styleguide.css" />
+
+</head>
+<body onload="check()">
+<div id="container" >
+  <div id="header">
+    <div class="login">
+
+    </div>
+    <div class="logo">
+
+      <a href="../index.html">
+        <img src="../img/topbar_img/FC_logo_Better_Be.png" alt="Logo">
+      </a>
+    </div>
+    <div class="cart">
+
+      <a href="#">
+        <img src="../img/topbar_img/Sign%20Out.png" alt="Sign Out" onclick="signOut()">
+      </a>
+    </div>
+  </div>
+
+
+  <div id="admin-page-table-box">
+    <table id="admin-page-table"></table>
+  </div>
+
+</div>
+
+<script>
+  let adminPage = document.getElementById("admin-page-table");
+  var url = document.location.href;
+  let optionInstanceID = url.split('?optionInstanceID=')[1];
+
+
+  function signOut() {
+    let httpRequest = new XMLHttpRequest();
+    httpRequest.onreadystatechange = function () {
+      if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+        window.open(this.responseURL, "_self");
+      }
+    }
+    httpRequest.open("POST", "http://localhost:8080/BetterBe6/rest/users/signout", true);
+    httpRequest.withCredentials = true;
+    httpRequest.send();
+  }
+
+
+  function requestOptionInstances() {
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "http://localhost:8080/BetterBe6/rest/history/ofAnOptionInstance/" + optionInstanceID, true); //TODO definitely change the link here
+    xhr.send();
+
+    xhr.onreadystatechange = function () {
+      if (this.readyState === 4 && this.status === 200) {
+        var response = this.responseText;
+        myObj = JSON.parse(response);
+
+        for (let i in myObj) {
+          addTableOptions(myObj[i].id, myObj[i].type, myObj[i].old_option_instance,
+                  myObj[i].new_option_instance, myObj[i].timestamp);
+        }
+      }
+    }
+  }
+
+  function check() {
+    let httpRequest = new XMLHttpRequest();
+    httpRequest.onreadystatechange = function () {
+      if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+        if (httpRequest.responseText === "true") {
+          show();
+        } else {
+          window.open("http://localhost:8080/BetterBe6/website/sign-up.html", "_self");
+        }
+      }
+    }
+    httpRequest.open("GET", "http://localhost:8080/BetterBe6/rest/users/check", true);
+    httpRequest.withCredentials = true;
+    httpRequest.send();
+  }
+
+  function show() {
+
+
+    adminPage.innerHTML =
+            "<tr>\n" +
+            "            <th>ID</th>\n" +
+            "            <th>Type</th>\n" +
+            "            <th>Old Option</th>\n" +
+            "            <th>New Option</th>\n" +
+            "            <th>Timestamp</th>\n" +
+            "        </tr>\n";
+    requestOptionInstances();
+  }
+
+
+  function addTableOptions(id, type, old_data, new_data, timestamp) {
+    adminPage.innerHTML += "  <tr id='tr" + id + "'>\n" +
+            "                <td>" + id + "</td>\n" +
+            "                <td id=\"make"+id+"\" >" + type + "</td>\n" +
+            "                <td id=\"model"+id+"\">" + old_data + "</td>\n" +
+            "                <td id=\"price"+id+"\">" + new_data + "</td>\n" +
+            "                <td id=\"bodyType"+id+"\" >" + timestamp+ "</td>\n" +
+            "            </tr>";
+  }
+
+
+  function optionInstanceTest() {
+    for (let i = 0; i < 10; i++) {
+      addTableOptions(i , 'UPDATE' ,'{“id”: 18, “make”: “Tesla”…}', '{“id”: 22, “car_id”: 2…}' , '2022-06-20 14:31:54');
+
+    }
+  }
+
+</script>
+
+</body>
+</html>
